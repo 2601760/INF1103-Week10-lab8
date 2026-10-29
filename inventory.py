@@ -1,3 +1,4 @@
+# Product Class
 class Product:
     def __init__(self, product_id, name, price, stock):
         self.__product_id = product_id
@@ -20,17 +21,17 @@ class Product:
     def update_stock(self, quantity):
         if self.__stock + quantity >= 0:
             self.__stock += quantity
-            print("Stock updated successfully.")
-        else:
-            print("Error: Stock cannot be negative.")
+            return True
+        return False
 
     def display_information(self):
-        print(f"Product ID : {self.__product_id}")
-        print(f"Name       : {self.__name}")
-        print(f"Price      : ${self.__price:.2f}")
-        print(f"Stock      : {self.__stock}")
+        print(f"ID: {self.__product_id}")
+        print(f"Name: {self.__name}")
+        print(f"Price: ${self.__price:.2f}")
+        print(f"Stock: {self.__stock}")
 
 
+# Inventory Class
 class Inventory:
     def __init__(self):
         self.__products = []
@@ -53,21 +54,50 @@ class Inventory:
             product.display_information()
             print("-" * 20)
 
-    def save_inventory(self):
-        with open("inventory.txt", "w") as file:
-            for product in self.__products:
-                file.write(
-                    f"{product.get_product_id()},"
-                    f"{product.get_name()},"
-                    f"{product.get_price()},"
-                    f"{product.get_stock()}\n"
+    def get_products(self):
+        return self.__products
+
+
+# File Handling Functions
+def save_inventory(inventory):
+    with open("inventory.txt", "w") as file:
+        for product in inventory.get_products():
+            file.write(
+                f"{product.get_product_id()},"
+                f"{product.get_name()},"
+                f"{product.get_price()},"
+                f"{product.get_stock()}\n"
+            )
+
+    print("Inventory saved successfully.")
+
+
+def load_inventory(inventory):
+    try:
+        inventory.get_products().clear()
+
+        with open("inventory.txt", "r") as file:
+            for line in file:
+                data = line.strip().split(",")
+
+                product = Product(
+                    data[0],
+                    data[1],
+                    float(data[2]),
+                    int(data[3])
                 )
 
-        print("Inventory saved successfully.")
+                inventory.add_product(product)
+
+    except FileNotFoundError:
+        pass
 
 
+# Main Program
 def main():
     inventory = Inventory()
+
+    load_inventory(inventory)
 
     while True:
         print("\n===== INVENTORY MANAGEMENT SYSTEM =====")
@@ -78,7 +108,7 @@ def main():
         print("5. Save Inventory")
         print("6. Exit")
 
-        choice = input("Enter your choice: ")
+        choice = input("Enter choice: ")
 
         if choice == "1":
             inventory.display_all()
@@ -86,7 +116,7 @@ def main():
         elif choice == "2":
             product_id = input("Enter Product ID: ")
             name = input("Enter Product Name: ")
-            price = float(input("Enter Product Price: "))
+            price = float(input("Enter Price: "))
             stock = int(input("Enter Stock Quantity: "))
 
             product = Product(product_id, name, price, stock)
@@ -100,8 +130,12 @@ def main():
             product = inventory.search_product(product_id)
 
             if product:
-                quantity = int(input("Enter quantity to add/remove: "))
-                product.update_stock(quantity)
+                quantity = int(input("Enter stock change (+/-): "))
+
+                if product.update_stock(quantity):
+                    print("Stock updated successfully.")
+                else:
+                    print("Stock cannot be negative.")
             else:
                 print("Product not found.")
 
@@ -116,14 +150,15 @@ def main():
                 print("Product not found.")
 
         elif choice == "5":
-            inventory.save_inventory()
+            save_inventory(inventory)
 
         elif choice == "6":
+            save_inventory(inventory)
             print("Goodbye!")
             break
 
         else:
-            print("Invalid choice. Please try again.")
+            print("Invalid choice.")
 
 
 main()
