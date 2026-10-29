@@ -10,7 +10,6 @@ class Product:
             print("Error: Stock cannot be negative.")
         else:
             self.__stock += quantity
-            print("Stock updated successfully.")
 
     def display_information(self):
         print(f"ID: {self.__product_id}")
@@ -33,43 +32,47 @@ class Product:
 
 class Inventory:
     def __init__(self):
-        self.products = []
+        self.__products = []
 
     def add_product(self, product):
-        self.products.append(product)
-
-    def display_products(self):
-        if not self.products:
-            print("Inventory is empty.")
-            return
-
-        for product in self.products:
-            product.display_information()
-            print("-" * 20)
+        self.__products.append(product)
 
     def search_product(self, product_id):
-        for product in self.products:
+        for product in self.__products:
             if product.get_product_id() == product_id:
                 return product
         return None
+
+    def display_all(self):
+        if not self.__products:
+            print("Inventory is empty.")
+            return
+
+        for product in self.__products:
+            product.display_information()
+            print("-" * 20)
+
+    def get_products(self):
+        return self.__products
 
 
 class FileManager:
     @staticmethod
     def save_inventory(inventory):
         with open("inventory.txt", "w") as file:
-            for product in inventory.products:
+            for product in inventory.get_products():
                 file.write(
                     f"{product.get_product_id()},"
                     f"{product.get_name()},"
                     f"{product.get_price()},"
                     f"{product.get_stock()}\n"
                 )
+
         print("Inventory saved successfully.")
 
     @staticmethod
     def load_inventory(inventory):
-        inventory.products.clear()
+        inventory.get_products().clear()
 
         try:
             with open("inventory.txt", "r") as file:
@@ -95,33 +98,33 @@ def menu():
     inventory = Inventory()
 
     while True:
-        print("\n===== INVENTORY MANAGEMENT SYSTEM =====")
+        print("\n===== INVENTORY SYSTEM =====")
         print("1. Add Product")
-        print("2. Display Products")
+        print("2. Display All Products")
         print("3. Search Product")
         print("4. Update Stock")
         print("5. Save Inventory")
         print("6. Load Inventory")
         print("7. Exit")
 
-        choice = input("Enter your choice: ")
+        choice = input("Enter choice: ")
 
         if choice == "1":
-            product_id = input("Enter Product ID: ")
-            name = input("Enter Product Name: ")
-            price = float(input("Enter Product Price: "))
-            stock = int(input("Enter Initial Stock: "))
+            product_id = input("Product ID: ")
+            name = input("Product Name: ")
+            price = float(input("Price: "))
+            stock = int(input("Stock: "))
 
             product = Product(product_id, name, price, stock)
             inventory.add_product(product)
 
-            print("Product added successfully!")
+            print("Product added successfully.")
 
         elif choice == "2":
-            inventory.display_products()
+            inventory.display_all()
 
         elif choice == "3":
-            product_id = input("Enter Product ID to search: ")
+            product_id = input("Enter Product ID: ")
 
             product = inventory.search_product(product_id)
 
@@ -136,8 +139,9 @@ def menu():
             product = inventory.search_product(product_id)
 
             if product:
-                quantity = int(input("Enter quantity to add/remove: "))
+                quantity = int(input("Enter stock change (+/-): "))
                 product.update_stock(quantity)
+                print("Stock updated successfully.")
             else:
                 print("Product not found.")
 
@@ -152,7 +156,7 @@ def menu():
             break
 
         else:
-            print("Invalid choice. Please try again.")
+            print("Invalid choice.")
 
 
 menu()
