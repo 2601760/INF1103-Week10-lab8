@@ -5,15 +5,7 @@ class Product:
         self.__price = float(price)
         self.__stock = int(stock)
 
-    def update_stock(self, quantity):
-        self.__stock += quantity
-
-    def display_information(self):
-        print(f"ID: {self.__product_id}")
-        print(f"Name: {self.__name}")
-        print(f"Price: ${self.__price:.2f}")
-        print(f"Stock: {self.__stock}")
-
+    # Getters
     def get_product_id(self):
         return self.__product_id
 
@@ -26,6 +18,22 @@ class Product:
     def get_stock(self):
         return self.__stock
 
+    # Encapsulated stock update
+    def update_stock(self, quantity):
+        if self.__stock + quantity < 0:
+            print("Error: Stock cannot be negative.")
+        else:
+            self.__stock += quantity
+            print("Stock updated successfully.")
+
+    def display_information(self):
+        print("\n------------------------")
+        print(f"Product ID : {self.__product_id}")
+        print(f"Name       : {self.__name}")
+        print(f"Price      : ${self.__price:.2f}")
+        print(f"Stock      : {self.__stock}")
+        print("------------------------")
+
 
 inventory = []
 
@@ -33,8 +41,8 @@ inventory = []
 def add_product():
     product_id = input("Enter Product ID: ")
     name = input("Enter Product Name: ")
-    price = float(input("Enter Price: "))
-    stock = int(input("Enter Stock Quantity: "))
+    price = float(input("Enter Product Price: "))
+    stock = int(input("Enter Initial Stock: "))
 
     product = Product(product_id, name, price, stock)
     inventory.append(product)
@@ -43,76 +51,74 @@ def add_product():
 
 
 def display_products():
-    if not inventory:
+    if len(inventory) == 0:
         print("Inventory is empty.")
         return
 
     print("\n=== INVENTORY ===")
     for product in inventory:
         product.display_information()
-        print("-" * 20)
 
 
 def search_product():
-    search_id = input("Enter Product ID to search: ")
+    product_id = input("Enter Product ID to search: ")
 
     for product in inventory:
-        if product.get_product_id() == search_id:
-            print("\nProduct Found:")
+        if product.get_product_id() == product_id:
+            print("Product found:")
             product.display_information()
             return
 
     print("Product not found.")
 
 
-def update_product_stock():
+def update_stock():
     product_id = input("Enter Product ID: ")
 
     for product in inventory:
         if product.get_product_id() == product_id:
-            quantity = int(input("Enter stock change (+/-): "))
+            quantity = int(input("Enter quantity to add/remove: "))
             product.update_stock(quantity)
-            print("Stock updated successfully!")
             return
 
     print("Product not found.")
 
 
 def save_inventory():
-    file = open("inventory.txt", "w")
+    try:
+        with open("inventory.txt", "w") as file:
+            for product in inventory:
+                file.write(
+                    f"{product.get_product_id()},"
+                    f"{product.get_name()},"
+                    f"{product.get_price()},"
+                    f"{product.get_stock()}\n"
+                )
 
-    for product in inventory:
-        file.write(
-            f"{product.get_product_id()},"
-            f"{product.get_name()},"
-            f"{product.get_price()},"
-            f"{product.get_stock()}\n"
-        )
+        print("Inventory saved successfully.")
 
-    file.close()
-    print("Inventory saved successfully!")
+    except Exception as e:
+        print("Error saving inventory:", e)
 
 
 def load_inventory():
     try:
-        file = open("inventory.txt", "r")
+        with open("inventory.txt", "r") as file:
+            inventory.clear()
 
-        inventory.clear()
+            for line in file:
+                data = line.strip().split(",")
 
-        for line in file:
-            data = line.strip().split(",")
+                product = Product(
+                    data[0],
+                    data[1],
+                    float(data[2]),
+                    int(data[3])
+                )
 
-            product = Product(
-                data[0],
-                data[1],
-                float(data[2]),
-                int(data[3])
-            )
+                inventory.append(product)
 
-            inventory.append(product)
-
-        file.close()
-        print("Inventory loaded successfully!")
+        print("Inventory loaded successfully.")
 
     except FileNotFoundError:
         print("No inventory file found.")
@@ -120,7 +126,7 @@ def load_inventory():
 
 def menu():
     while True:
-        print("\n===== INVENTORY SYSTEM =====")
+        print("\n===== INVENTORY MANAGEMENT SYSTEM =====")
         print("1. Add Product")
         print("2. Display Products")
         print("3. Search Product")
@@ -141,7 +147,7 @@ def menu():
             search_product()
 
         elif choice == "4":
-            update_product_stock()
+            update_stock()
 
         elif choice == "5":
             save_inventory()
@@ -150,7 +156,7 @@ def menu():
             load_inventory()
 
         elif choice == "7":
-            print("Goodbye!")
+            print("Thank you for using the Inventory Management System.")
             break
 
         else:
