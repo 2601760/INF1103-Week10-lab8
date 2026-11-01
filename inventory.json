@@ -1,0 +1,14 @@
+[
+    {
+        "product_id": "2001",
+        "name": "Computer",
+        "price": 20.0,
+        "stock": 2222
+    },
+    {
+        "product_id": "3001",
+        "name": "Mouse",
+        "price": 9.0,
+        "stock": 10
+    }
+]

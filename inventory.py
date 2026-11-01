@@ -1,4 +1,6 @@
-# Product Class
+import json
+
+
 class Product:
     def __init__(self, product_id, name, price, stock):
         self.__product_id = product_id
@@ -25,13 +27,12 @@ class Product:
         return False
 
     def display_information(self):
-        print(f"ID: {self.__product_id}")
-        print(f"Name: {self.__name}")
-        print(f"Price: ${self.__price:.2f}")
-        print(f"Stock: {self.__stock}")
+        print(f"Product ID : {self.__product_id}")
+        print(f"Name       : {self.__name}")
+        print(f"Price      : ${self.__price:.2f}")
+        print(f"Stock      : {self.__stock}")
 
 
-# Inventory Class
 class Inventory:
     def __init__(self):
         self.__products = []
@@ -50,50 +51,54 @@ class Inventory:
             print("Inventory is empty.")
             return
 
+        print("\n=== PRODUCT LIST ===")
+
         for product in self.__products:
             product.display_information()
-            print("-" * 20)
+            print("-" * 30)
 
     def get_products(self):
         return self.__products
 
 
-# File Handling Functions
 def save_inventory(inventory):
-    with open("inventory.txt", "w") as file:
-        for product in inventory.get_products():
-            file.write(
-                f"{product.get_product_id()},"
-                f"{product.get_name()},"
-                f"{product.get_price()},"
-                f"{product.get_stock()}\n"
-            )
+    data = []
+
+    for product in inventory.get_products():
+        data.append({
+            "product_id": product.get_product_id(),
+            "name": product.get_name(),
+            "price": product.get_price(),
+            "stock": product.get_stock()
+        })
+
+    with open("inventory.json", "w") as file:
+        json.dump(data, file, indent=4)
 
     print("Inventory saved successfully.")
 
 
 def load_inventory(inventory):
     try:
+        with open("inventory.json", "r") as file:
+            data = json.load(file)
+
         inventory.get_products().clear()
 
-        with open("inventory.txt", "r") as file:
-            for line in file:
-                data = line.strip().split(",")
+        for item in data:
+            product = Product(
+                item["product_id"],
+                item["name"],
+                item["price"],
+                item["stock"]
+            )
 
-                product = Product(
-                    data[0],
-                    data[1],
-                    float(data[2]),
-                    int(data[3])
-                )
-
-                inventory.add_product(product)
+            inventory.add_product(product)
 
     except FileNotFoundError:
-        pass
+        print("No inventory.json found. Starting with empty inventory.")
 
 
-# Main Program
 def main():
     inventory = Inventory()
 
@@ -108,7 +113,7 @@ def main():
         print("5. Save Inventory")
         print("6. Exit")
 
-        choice = input("Enter choice: ")
+        choice = input("Enter your choice: ")
 
         if choice == "1":
             inventory.display_all()
@@ -116,11 +121,22 @@ def main():
         elif choice == "2":
             product_id = input("Enter Product ID: ")
             name = input("Enter Product Name: ")
-            price = float(input("Enter Price: "))
-            stock = int(input("Enter Stock Quantity: "))
 
-            product = Product(product_id, name, price, stock)
-            inventory.add_product(product)
+            try:
+                price = float(input("Enter Price: "))
+                stock = int(input("Enter Stock Quantity: "))
+            except ValueError:
+                print("Invalid input.")
+                continue
+
+            new_product = Product(
+                product_id,
+                name,
+                price,
+                stock
+            )
+
+            inventory.add_product(new_product)
 
             print("Product added successfully.")
 
@@ -130,12 +146,19 @@ def main():
             product = inventory.search_product(product_id)
 
             if product:
-                quantity = int(input("Enter stock change (+/-): "))
+                try:
+                    quantity = int(
+                        input("Enter quantity to add/remove (+/-): ")
+                    )
 
-                if product.update_stock(quantity):
-                    print("Stock updated successfully.")
-                else:
-                    print("Stock cannot be negative.")
+                    if product.update_stock(quantity):
+                        print("Stock updated successfully.")
+                    else:
+                        print("Stock cannot be negative.")
+
+                except ValueError:
+                    print("Invalid quantity.")
+
             else:
                 print("Product not found.")
 
@@ -158,7 +181,19 @@ def main():
             break
 
         else:
-            print("Invalid choice.")
+            print("Invalid choice. Please try again.")
 
+class PhysicalProduct(Product):
+    def __init__(self, product_id, name, price, stock, weight):
+        super().__init__(product_id, name, price, stock)
+        self.__weight = float(weight)
 
+    def get_weight(self):
+        return self.__weight
+
+    def display_information(self):
+        super().display_information()
+        print(f"Weight     : {self.__weight} kg")
+
+        
 main()
