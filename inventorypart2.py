@@ -22,18 +22,6 @@ class Product(ABC):
         self.__price = float(price)
         self.__stock = int(stock)
 
-    def get_product_id(self):
-        return self.__product_id
-
-    def get_name(self):
-        return self.__name
-
-    def get_price(self):
-        return self.__price
-
-    def get_stock(self):
-        return self.__stock
-
     def display_information(self):
         print(f"Product ID : {self.__product_id}")
         print(f"Name       : {self.__name}")
@@ -46,9 +34,9 @@ class Product(ABC):
 
 
 # =====================================
-# Physical Product
+# PhysicalProduct
 # =====================================
-class PhysicalProduct(Product, CanBeShipped):
+class PhysicalProduct(Product):
 
     def __init__(self, product_id, name, price, stock, weight):
         super().__init__(product_id, name, price, stock)
@@ -62,11 +50,11 @@ class PhysicalProduct(Product, CanBeShipped):
         return "This product requires physical shipping."
 
     def calculate_shipping_cost(self):
-        return self.__weight * 5.0
+        return self.__weight * 5.00
 
 
 # =====================================
-# Digital Product
+# DigitalProduct
 # =====================================
 class DigitalProduct(Product):
 
@@ -87,9 +75,8 @@ class DigitalProduct(Product):
 # =====================================
 def main():
 
-    print("=== Physical Product Test ===")
-
-    physical_product = PhysicalProduct(
+    print("=== Physical Product 1 ===")
+    product1 = PhysicalProduct(
         "P001",
         "Laptop",
         1200.00,
@@ -97,17 +84,29 @@ def main():
         2.5
     )
 
-    physical_product.display_information()
-    print(physical_product.get_fulfilment_info())
-    print(
-        f"Shipping Cost : ${physical_product.calculate_shipping_cost():.2f}"
-    )
+    product1.display_information()
+    print(product1.get_fulfilment_info())
+    print(f"Shipping Cost : ${product1.calculate_shipping_cost():.2f}")
 
     print("\n" + "-" * 40 + "\n")
 
-    print("=== Digital Product Test ===")
+    print("=== Physical Product 2 ===")
+    product2 = PhysicalProduct(
+        "P002",
+        "Monitor",
+        300.00,
+        10,
+        5.0
+    )
 
-    digital_product = DigitalProduct(
+    product2.display_information()
+    print(product2.get_fulfilment_info())
+    print(f"Shipping Cost : ${product2.calculate_shipping_cost():.2f}")
+
+    print("\n" + "-" * 40 + "\n")
+
+    print("=== Digital Product ===")
+    digital = DigitalProduct(
         "D001",
         "Microsoft Office",
         199.99,
@@ -115,8 +114,8 @@ def main():
         3500
     )
 
-    digital_product.display_information()
-    print(digital_product.get_fulfilment_info())
+    digital.display_information()
+    print(digital.get_fulfilment_info())
 
 
 main()
