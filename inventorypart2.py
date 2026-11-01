@@ -1,9 +1,11 @@
 import json
+from abc import ABC, abstractmethod
 
-import inventorypart2
 
-
-class Product:
+# =====================================
+# Abstract Product Class
+# =====================================
+class Product(ABC):
     def __init__(self, product_id, name, price, stock):
         self.__product_id = product_id
         self.__name = name
@@ -34,7 +36,46 @@ class Product:
         print(f"Price      : ${self.__price:.2f}")
         print(f"Stock      : {self.__stock}")
 
+    @abstractmethod
+    def get_fulfilment_info(self):
+        pass
 
+
+# =====================================
+# Physical Product
+# =====================================
+class PhysicalProduct(Product):
+    def __init__(self, product_id, name, price, stock, weight):
+        super().__init__(product_id, name, price, stock)
+        self.__weight = float(weight)
+
+    def display_information(self):
+        super().display_information()
+        print(f"Weight     : {self.__weight} kg")
+
+    def get_fulfilment_info(self):
+        return f"Shipping weight: {self.__weight} kg"
+
+
+# =====================================
+# Digital Product
+# =====================================
+class DigitalProduct(Product):
+    def __init__(self, product_id, name, price, stock, download_size):
+        super().__init__(product_id, name, price, stock)
+        self.__download_size = float(download_size)
+
+    def display_information(self):
+        super().display_information()
+        print(f"Download Size : {self.__download_size} MB")
+
+    def get_fulfilment_info(self):
+        return f"Download size: {self.__download_size} MB"
+
+
+# =====================================
+# Inventory Class
+# =====================================
 class Inventory:
     def __init__(self):
         self.__products = []
@@ -57,12 +98,16 @@ class Inventory:
 
         for product in self.__products:
             product.display_information()
+            print(product.get_fulfilment_info())
             print("-" * 30)
 
     def get_products(self):
         return self.__products
 
 
+# =====================================
+# Save Inventory
+# =====================================
 def save_inventory(inventory):
     data = []
 
@@ -80,6 +125,9 @@ def save_inventory(inventory):
     print("Inventory saved successfully.")
 
 
+# =====================================
+# Load Inventory
+# =====================================
 def load_inventory(inventory):
     try:
         with open("inventory.json", "r") as file:
@@ -88,11 +136,12 @@ def load_inventory(inventory):
         inventory.get_products().clear()
 
         for item in data:
-            product = Product(
+            product = PhysicalProduct(
                 item["product_id"],
                 item["name"],
                 item["price"],
-                item["stock"]
+                item["stock"],
+                1.0
             )
 
             inventory.add_product(product)
@@ -101,16 +150,48 @@ def load_inventory(inventory):
         print("No inventory.json found. Starting with empty inventory.")
 
 
+# =====================================
+# Main Program
+# =====================================
 def main():
     inventory = Inventory()
 
     load_inventory(inventory)
 
+    print("\n=== Physical Product Test ===")
+    physical_product = PhysicalProduct(
+        "P001",
+        "Laptop",
+        1200.00,
+        15,
+        2.5
+    )
+
+    physical_product.display_information()
+    print(physical_product.get_fulfilment_info())
+
+    print("\n" + "-" * 30 + "\n")
+
+    print("=== Digital Product Test ===")
+    digital_product = DigitalProduct(
+        "D001",
+        "Microsoft Office",
+        199.99,
+        100,
+        3500
+    )
+
+    digital_product.display_information()
+    print(digital_product.get_fulfilment_info())
+
+    inventory.add_product(physical_product)
+    inventory.add_product(digital_product)
+
     while True:
         print("\n===== INVENTORY MANAGEMENT SYSTEM =====")
         print("1. Display All Products")
-        print("2. Add Product")
-        print("3. Update Stock")
+        print("2. Add Physical Product")
+        print("3. Add Digital Product")
         print("4. Search Product")
         print("5. Save Inventory")
         print("6. Exit")
@@ -123,46 +204,40 @@ def main():
         elif choice == "2":
             product_id = input("Enter Product ID: ")
             name = input("Enter Product Name: ")
+            price = float(input("Enter Price: "))
+            stock = int(input("Enter Stock Quantity: "))
+            weight = float(input("Enter Weight (kg): "))
 
-            try:
-                price = float(input("Enter Price: "))
-                stock = int(input("Enter Stock Quantity: "))
-            except ValueError:
-                print("Invalid input.")
-                continue
-
-            new_product = Product(
-                product_id,
-                name,
-                price,
-                stock
+            inventory.add_product(
+                PhysicalProduct(
+                    product_id,
+                    name,
+                    price,
+                    stock,
+                    weight
+                )
             )
 
-            inventory.add_product(new_product)
-
-            print("Product added successfully.")
+            print("Physical product added successfully.")
 
         elif choice == "3":
             product_id = input("Enter Product ID: ")
+            name = input("Enter Product Name: ")
+            price = float(input("Enter Price: "))
+            stock = int(input("Enter Stock Quantity: "))
+            download_size = float(input("Enter Download Size (MB): "))
 
-            product = inventory.search_product(product_id)
+            inventory.add_product(
+                DigitalProduct(
+                    product_id,
+                    name,
+                    price,
+                    stock,
+                    download_size
+                )
+            )
 
-            if product:
-                try:
-                    quantity = int(
-                        input("Enter quantity to add/remove (+/-): ")
-                    )
-
-                    if product.update_stock(quantity):
-                        print("Stock updated successfully.")
-                    else:
-                        print("Stock cannot be negative.")
-
-                except ValueError:
-                    print("Invalid quantity.")
-
-            else:
-                print("Product not found.")
+            print("Digital product added successfully.")
 
         elif choice == "4":
             product_id = input("Enter Product ID: ")
@@ -171,6 +246,7 @@ def main():
 
             if product:
                 product.display_information()
+                print(product.get_fulfilment_info())
             else:
                 print("Product not found.")
 
@@ -183,50 +259,7 @@ def main():
             break
 
         else:
-            print("Invalid choice. Please try again.")
-
-class PhysicalProduct(Product):
-    def __init__(self, product_id, name, price, stock, weight):
-        super().__init__(product_id, name, price, stock)
-        self.__weight = weight
-
-    def display_information(self):
-        super().display_information()
-        print(f"Weight     : {self.__weight} kg")
-
-
-class DigitalProduct(Product):
-    def __init__(self, product_id, name, price, stock, download_size):
-        super().__init__(product_id, name, price, stock)
-        self.__download_size = download_size
-
-    def display_information(self):
-        super().display_information()
-        print(f"Download Size : {self.__download_size} MB")
-
+            print("Invalid choice.")
 
 
 main()
-load_inventory(inventorypart2.Inventory())
-
-print("\n=== Physical Product Test ===")
-physical_product = PhysicalProduct(
-    "P001",
-    "Laptop",
-    1200.00,
-    15,
-    2.5
-)
-physical_product.display_information()
-
-print("\n" + "-" * 30 + "\n")
-
-print("=== Digital Product Test ===")
-digital_product = DigitalProduct(
-    "D001",
-    "Microsoft Office",
-    199.99,
-    100,
-    3500
-)
-digital_product.display_information()
