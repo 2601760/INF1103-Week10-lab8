@@ -206,9 +206,6 @@ class DigitalProduct(Product):
 
 
 
-
-
-
 main()
 load_inventory(inventorypart2.Inventory())
 
