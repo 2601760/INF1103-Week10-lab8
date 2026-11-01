@@ -1,5 +1,7 @@
 import json
 
+import inventorypart2
+
 
 class Product:
     def __init__(self, product_id, name, price, stock):
@@ -186,13 +188,48 @@ def main():
 class PhysicalProduct(Product):
     def __init__(self, product_id, name, price, stock, weight):
         super().__init__(product_id, name, price, stock)
-        self.__weight = float(weight)
-
-    def get_weight(self):
-        return self.__weight
+        self.__weight = weight
 
     def display_information(self):
         super().display_information()
         print(f"Weight     : {self.__weight} kg")
-        
+
+
+class DigitalProduct(Product):
+    def __init__(self, product_id, name, price, stock, download_size):
+        super().__init__(product_id, name, price, stock)
+        self.__download_size = download_size
+
+    def display_information(self):
+        super().display_information()
+        print(f"Download Size : {self.__download_size} MB")
+
+
+
+
+
+
 main()
+load_inventory(inventorypart2.Inventory())
+
+print("\n=== Physical Product Test ===")
+physical_product = PhysicalProduct(
+    "P001",
+    "Laptop",
+    1200.00,
+    15,
+    2.5
+)
+physical_product.display_information()
+
+print("\n" + "-" * 30 + "\n")
+
+print("=== Digital Product Test ===")
+digital_product = DigitalProduct(
+    "D001",
+    "Microsoft Office",
+    199.99,
+    100,
+    3500
+)
+digital_product.display_information()
