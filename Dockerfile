@@ -4,5 +4,5 @@ WORKDIR /app
 
 COPY . .
 
-CMD ["python", "inventory.py"]
+CMD ["python", "inventorypart2.py"]
 
