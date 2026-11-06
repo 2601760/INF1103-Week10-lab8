@@ -139,6 +139,40 @@ class SoftwareItem(Item):
         return "This item is delivered digitally."
 
 
+class Inventory:
+
+    def __init__(self, inventory_name: str):
+        self.inventory_name = inventory_name
+        self.products: list[Item] = []
+
+    def add_product(self, product: Item):
+        self.products.append(product)
+
+    def remove_product(self, product_id: str):
+        for product in self.products:
+            if product.get_item_id() == product_id:
+                self.products.remove(product)
+                return True
+        return False
+
+    def find_product(self, product_id: str) -> Item | None:
+        for product in self.products:
+            if product.get_item_id() == product_id:
+                return product
+        return None
+
+    def display_products(self):
+        print(f"\n{self.inventory_name}")
+
+        if not self.products:
+            print("No products in inventory.")
+            return
+
+        for product in self.products:
+            product.show_details()
+            print("-" * 30)
+
+
 def main():
 
     vendor = Vendor(
@@ -165,17 +199,13 @@ def main():
         vendor
     )
 
-    print("\nVendor Information Through Hardware Item")
+    print("\n=== ASSOCIATION TEST ===")
+
+    print("\nVendor Through Hardware Item")
     laptop.show_vendor()
 
-    print("\nVendor Information Through Software Item")
+    print("\nVendor Through Software Item")
     antivirus.show_vendor()
-
-    print("\nObject IDs")
-    print(f"Hardware Item : {id(laptop)}")
-    print(f"Software Item : {id(antivirus)}")
-    print(f"Vendor From Hardware : {id(laptop.vendor)}")
-    print(f"Vendor From Software : {id(antivirus.vendor)}")
 
     del vendor
 
@@ -183,6 +213,38 @@ def main():
 
     laptop.show_vendor()
     antivirus.show_vendor()
-    
+
+    print("\n=== AGGREGATION TEST ===")
+
+    inventory_a = Inventory("Inventory A")
+    inventory_b = Inventory("Inventory B")
+
+    print("\nProduct created before inventory:")
+    laptop.show_details()
+
+    inventory_a.add_product(laptop)
+
+    print("\nAdded to Inventory A")
+    inventory_a.display_products()
+
+    inventory_a.remove_product("H001")
+
+    print("\nRemoved from Inventory A")
+
+    print("\nProduct still exists:")
+    laptop.show_details()
+
+    inventory_b.add_product(laptop)
+
+    print("\nAdded to Inventory B")
+    inventory_b.display_products()
+
+    inventory_b.remove_product("H001")
+
+    print("\nRemoved from Inventory B")
+
+    print("\nProduct still exists:")
+    laptop.show_details()
+
 
 main()
