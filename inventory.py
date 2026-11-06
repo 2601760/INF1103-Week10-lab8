@@ -22,9 +22,10 @@ class Vendor:
         self.email_address: str = email_address
 
     def show_details(self) -> None:
-        print(f"Vendor ID     : {self.vendor_id}")
-        print(f"Company Name  : {self.company_name}")
-        print(f"Email Address : {self.email_address}")
+
+        print(f"Vendor ID: {self.vendor_id}")
+        print(f"Company Name: {self.company_name}")
+        print(f"Email Address: {self.email_address}")
 
 
 class Item(ABC):
@@ -38,31 +39,31 @@ class Item(ABC):
         vendor: Vendor
     ) -> None:
 
+        self.item_id: str = item_id
+        self.item_name: str = item_name
+        self.unit_price: float = unit_price
+        self.quantity_available: int = quantity_available
         self.vendor: Vendor = vendor
-        self._item_id: str = item_id
-        self._item_name: str = item_name
-        self._unit_price: float = unit_price
-        self._quantity_available: int = quantity_available
 
     def get_item_id(self) -> str:
-        return self._item_id
+        return self.item_id
 
     def get_item_name(self) -> str:
-        return self._item_name
+        return self.item_name
 
     def get_unit_price(self) -> float:
-        return self._unit_price
+        return self.unit_price
 
     def get_quantity(self) -> int:
-        return self._quantity_available
+        return self.quantity_available
 
     def modify_quantity(
         self,
         amount: int
     ) -> bool:
 
-        if self._quantity_available + amount >= 0:
-            self._quantity_available += amount
+        if self.quantity_available + amount >= 0:
+            self.quantity_available += amount
             return True
 
         return False
@@ -72,6 +73,10 @@ class Item(ABC):
 
     @abstractmethod
     def delivery_details(self) -> str:
+        pass
+
+    @abstractmethod
+    def show_details(self) -> None:
         pass
 
 
@@ -103,6 +108,14 @@ class HardwareItem(Item, Shippable):
     def delivery_details(self) -> str:
         return "Physical delivery required."
 
+    def show_details(self) -> None:
+
+        print(f"\nID: {self.item_id}")
+        print(f"Name: {self.item_name}")
+        print(f"Price: ${self.unit_price:.2f}")
+        print(f"Quantity: {self.quantity_available}")
+        print(f"Mass: {self.mass} kg")
+
 
 class SoftwareItem(Item):
 
@@ -128,6 +141,14 @@ class SoftwareItem(Item):
 
     def delivery_details(self) -> str:
         return "Delivered digitally."
+
+    def show_details(self) -> None:
+
+        print(f"\nID: {self.item_id}")
+        print(f"Name: {self.item_name}")
+        print(f"Price: ${self.unit_price:.2f}")
+        print(f"Quantity: {self.quantity_available}")
+        print(f"File Size: {self.file_size} MB")
 
 
 class Inventory:
@@ -171,6 +192,14 @@ class Inventory:
                 return product
 
         return None
+
+    def display_all_products(self) -> None:
+
+        print(f"\n{self.inventory_name}")
+
+        for product in self.products:
+            product.show_details()
+            print(product.delivery_details())
 
 
 class OrderLine:
@@ -226,7 +255,6 @@ class Order:
                 line.product.get_item_id()
                 == product_id
             ):
-
                 self.order_lines.remove(line)
                 return True
 
@@ -240,6 +268,35 @@ class Order:
             total += line.calculate_subtotal()
 
         return total
+
+    def display_order(self) -> None:
+
+        print(f"\nOrder ID: {self.order_id}")
+
+        for line in self.order_lines:
+
+            print(
+                f"{line.product.get_item_name()} "
+                f"x {line.quantity}"
+            )
+
+            print(
+                f"Subtotal: "
+                f"${line.calculate_subtotal():.2f}"
+            )
+
+        print(
+            f"Total: "
+            f"${self.calculate_total():.2f}"
+        )
+
+
+def show_item_details(
+    item: Item
+) -> None:
+
+    item.show_details()
+    print(item.delivery_details())
 
 
 def main() -> None:
@@ -268,29 +325,117 @@ def main() -> None:
         vendor
     )
 
-    inventory = Inventory(
-        "Main Inventory"
+    print("\n=== ASSOCIATION TEST ===")
+
+    laptop.show_vendor()
+    antivirus.show_vendor()
+
+    del vendor
+
+    print("\nVendor still accessible through items:")
+
+    laptop.show_vendor()
+    antivirus.show_vendor()
+
+    print("\n=== AGGREGATION TEST ===")
+
+    inventory_a = Inventory(
+        "Inventory A"
     )
 
-    inventory.add_product(laptop)
-    inventory.add_product(antivirus)
+    inventory_b = Inventory(
+        "Inventory B"
+    )
 
-    order = Order("ORD001")
+    inventory_a.add_product(
+        laptop
+    )
 
-    order.add_order_line(
+    inventory_a.display_all_products()
+
+    inventory_a.remove_product(
+        "H001"
+    )
+
+    print(
+        "\nProduct still exists "
+        "after removal:"
+    )
+
+    laptop.show_details()
+
+    inventory_b.add_product(
+        laptop
+    )
+
+    inventory_b.display_all_products()
+
+    print("\n=== COMPOSITION TEST ===")
+
+    order_1 = Order("ORD001")
+
+    order_1.add_order_line(
         laptop,
         2
     )
 
-    order.add_order_line(
+    order_1.add_order_line(
         antivirus,
         3
     )
 
-    print(
-        f"Order Total: "
-        f"${order.calculate_total():.2f}"
+    order_1.display_order()
+
+    order_2 = Order("ORD002")
+
+    order_2.add_order_line(
+        laptop,
+        1
     )
+
+    order_2.display_order()
+
+    print(
+        "\nSame Product Object:"
+    )
+
+    print(
+        order_1.order_lines[0].product
+        is order_2.order_lines[0].product
+    )
+
+    print(
+        "\nSame OrderLine Object:"
+    )
+
+    print(
+        order_1.order_lines[0]
+        is order_2.order_lines[0]
+    )
+
+    print("\n=== LSP TEST ===")
+
+    show_item_details(
+        laptop
+    )
+
+    show_item_details(
+        antivirus
+    )
+
+    inventory = Inventory(
+        "Main Inventory"
+    )
+
+    inventory.add_product(
+        laptop
+    )
+
+    inventory.add_product(
+        antivirus
+    )
+
+    inventory.display_all_products()
 
 
 main()
