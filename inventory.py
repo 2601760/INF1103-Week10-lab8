@@ -183,6 +183,6 @@ def main():
 
     laptop.show_vendor()
     antivirus.show_vendor()
-
+    
 
 main()
