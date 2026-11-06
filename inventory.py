@@ -247,4 +247,69 @@ def main():
     laptop.show_details()
 
 
+class OrderLine:
+
+    def __init__(self, product: Item, quantity: int):
+        self.product: Item = product
+        self.quantity: int = quantity
+
+    def calculate_subtotal(self) -> float:
+        return self.product.get_unit_price() * self.quantity
+
+
+class Order:
+
+    def __init__(self, order_id: str):
+        self.order_id: str = order_id
+        self.order_lines: list[OrderLine] = []
+
+    def add_order_line(
+        self,
+        product: Item,
+        quantity: int
+    ) -> None:
+
+        order_line = OrderLine(product, quantity)
+        self.order_lines.append(order_line)
+
+    def remove_order_line(
+        self,
+        product_id: str
+    ) -> bool:
+
+        for line in self.order_lines:
+            if line.product.get_item_id() == product_id:
+                self.order_lines.remove(line)
+                return True
+        return False
+
+    def calculate_total(self) -> float:
+        total = 0
+
+        for line in self.order_lines:
+            total += line.calculate_subtotal()
+
+        return total
+
+    def display_order(self):
+
+        print(f"\nOrder ID: {self.order_id}")
+
+        for line in self.order_lines:
+
+            print(
+                f"{line.product.get_item_name()} "
+                f"x {line.quantity}"
+            )
+
+            print(
+                f"Subtotal: "
+                f"${line.calculate_subtotal():.2f}"
+            )
+
+        print(
+            f"\nOrder Total: "
+            f"${self.calculate_total():.2f}"
+        )
+
 main()
